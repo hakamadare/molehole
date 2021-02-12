@@ -26,21 +26,29 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/spf13/cobra"
-
 	"github.com/adrg/xdg"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-const appName string = "molehole"
-const cfgFileName string = "config"
+const (
+	appName     string = "molehole"
+	cfgFileName string = "config"
+)
 
-var cfgFile string
+var (
+	cfgFile    string
+	appVersion string = "dev"
+	appCommit  string = "UNKNOWN" // nolint
+	appDate    string = "UNKNOWN" // nolint
+	appBuiltBy string = "UNKNOWN" // nolint
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   appName,
-	Short: "A brief description of your application",
+	Use:     appName,
+	Version: appVersion,
+	Short:   "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
 
@@ -56,6 +64,8 @@ to quickly create a Cobra application.`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
+	fmt.Printf("appVersion: %s\n", appVersion)
+	fmt.Printf("rootCmd.Version: %s\n", rootCmd.Version)
 }
 
 func init() {
