@@ -32,12 +32,12 @@ import (
 )
 
 const (
-	appName     string = "molehole"
-	cfgFileName string = "config"
+	appName        string = "molehole"
+	configFileName string = "config"
 )
 
 var (
-	cfgFile    string
+	configFile string
 	appVersion string = "dev"
 	appCommit  string = "UNKNOWN" // nolint
 	appDate    string = "UNKNOWN" // nolint
@@ -57,15 +57,16 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	// Run: func(cmd *cobra.Command, args []string) {
+	// ip := ip.GetIP()
+	// fmt.Println(ip)
+	// },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
-	fmt.Printf("appVersion: %s\n", appVersion)
-	fmt.Printf("rootCmd.Version: %s\n", rootCmd.Version)
 }
 
 func init() {
@@ -75,26 +76,34 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default is $HOME/.config/%s/%s.yaml)", appName, cfgFileName))
+	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", fmt.Sprintf("config file (default is %s)", getConfigFile()))
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+func getConfigFile() string {
+	// Get config file from XDG standard
+	configRelPath := filepath.Join(appName, fmt.Sprintf("%s.yaml", configFileName))
+	configFilePath, err := xdg.SearchConfigFile(configRelPath)
+	if err != nil {
+		// Create config file if not found
+		configFilePath, _ = xdg.ConfigFile(configRelPath)
+	}
+	return configFilePath
+}
+
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" {
+	if configFile != "" {
 		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
+		viper.SetConfigFile(configFile)
 	} else {
-		// Get config file from XDG standard
-		configFilePath, err := xdg.SearchConfigFile("molehole/config.yaml")
-		cobra.CheckErr(err)
+		configFilePath := getConfigFile()
 
-		// Search config in home directory with name ".molehole" (without extension).
 		viper.AddConfigPath(filepath.Dir(configFilePath))
-		viper.SetConfigName(cfgFileName)
+		viper.SetConfigName(configFileName)
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
