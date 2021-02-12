@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 package main
 
-import "molehole/cmd"
+import "github.com/hakamadare/molehole/cmd"
 
 func main() {
 	cmd.Execute()
